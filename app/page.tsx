@@ -2,7 +2,8 @@
 
 import { ConnectButton } from "arweave-wallet-kit";
 import { useActiveAddress } from "arweave-wallet-kit";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import axios from "axios";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -17,15 +18,20 @@ export default function Home() {
     setMessage(event.target.value);
   };
 
-  const sendMessage = () => {
-    if (activeAddress === null) {
-      alert("Please connect your wallet to proceed");
-    }
-    else if (inputValue === "") {
+  const sendMessage = async () => {
+    // if (activeAddress === null) {
+    //   alert("Please connect your wallet to proceed");
+    // }
+    if (inputValue === "") {
       alert("Please enter a message");
     }
     else {
-      console.log(message);
+      try {
+        const response = await axios.post('http://localhost:4000', {message});
+        console.log(response);
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 
