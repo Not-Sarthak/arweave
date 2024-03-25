@@ -2,7 +2,7 @@
 
 import { ConnectButton } from "arweave-wallet-kit";
 import { useActiveAddress } from "arweave-wallet-kit";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function Home() {
@@ -10,7 +10,7 @@ export default function Home() {
   const [inputValue, setInputValue] = useState("");
   const activeAddress = useActiveAddress() || null;
 
-  const messages = ["Hey", "Hey", "Hey", "Hey", "Hey", "Hey", "Hey", "Hey", "Hey", "Hey", "Hey", "Hey"]
+  const [messages, setMessages] = useState<String[]>([]);
   const displayMessages = messages.map((message, index) => ( <div key={index}>{message}</div> ))
 
   const handleInputChange = (event:any) => {
@@ -27,22 +27,32 @@ export default function Home() {
     }
     else {
       try {
-        const response = await axios.post('http://localhost:4000', {message});
+        const response = await axios.post('http://localhost:4000/send', {message});
         console.log(response);
+        setMessages(prevMessages => [...prevMessages, message]);
       } catch (error) {
         console.log(error);
       }
     }
   }
 
+  const register = async () => {
+    try {
+      const response = await axios.post('http://localhost:4000/register');
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div>
-      <ConnectButton showBalance={true} showProfilePicture={true} />
+      {/* <ConnectButton showBalance={true} showProfilePicture={true} /> */}
       <div>
-        <div className="bg-red-700 w-96 h-96">
+        <div className="border-2 w-96 h-96 mb-6 ml-96">
           {displayMessages}
         </div>
-        <div>
+        <div className="ml-96">
           <input
             type="text"
             placeholder="Enter a message..."
@@ -51,6 +61,7 @@ export default function Home() {
             onChange={handleInputChange}
           />
           <button onClick={sendMessage}>Send Message</button>
+          <button onClick={register} className="ml-4">Register</button>
         </div>
       </div>
     </div>

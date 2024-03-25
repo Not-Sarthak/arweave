@@ -23,6 +23,44 @@ app.post('/', async (req, res) => {
     return res.send({ data: msg })
 })
 
+app.post('/register', async (req, res) => {
+    const msg = await message({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        signer: createDataItemSigner(wallet),
+        tags: [
+            { name: 'Action', value: 'Register' }
+        ]
+    });
+
+    let { Messages, Spawns, Output, Error } = await result({
+        message: msg,
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+    });
+
+    console.log(Messages[0].Data);
+    return res.send({ data: Messages[0].Data });
+})
+
+app.post('/send', async (req, res) => {
+    const messageText = req.body.message;
+    const msg = await message({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        data: messageText,
+        signer: createDataItemSigner(wallet),
+        tags: [
+            { name: 'Action', value: 'Broadcast' }
+        ]
+    });
+
+    let { Messages, Spawns, Output, Error } = await result({
+        message: msg,
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+    });
+
+    console.log(Messages[0].Data);
+    return res.send({ data: Messages[0].Data });
+})
+
 app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);
 })
