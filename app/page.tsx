@@ -1,17 +1,39 @@
 "use client";
 
-import { ConnectButton } from "arweave-wallet-kit";
-import { useActiveAddress } from "arweave-wallet-kit";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { createDataItemSigner, message as AOMessage, result } from "@permaweb/aoconnect";
 
 export default function Home() {
   const [message, setMessage] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const activeAddress = useActiveAddress() || null;
-
   const [messages, setMessages] = useState<String[]>([]);
-  const displayMessages = messages.map((message, index) => ( <div key={index}>{message}</div> ))
+  const displayMessages = messages.map((message, index) => ( <div key={index}>{message}</div> ));
+  const [walletConnected, setWalletConnected] = useState(false);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get('api/getmsgs');
+  //       setMessages(prevMessages => [...prevMessages, response.data.data]);
+  //       console.log(response);
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
+
+  //   fetchData();
+  //   // const interval = setInterval(fetchData, 10000);
+  // }, []);
+
+  async function connectWallet() {
+    await window.arweaveWallet.connect(["SIGN_TRANSACTION"]);
+    setWalletConnected(true);
+  }
+  
+  async function disconnectWallet() {
+    await window.arweaveWallet.disconnect();
+    setWalletConnected(false);
+  }
 
   const handleInputChange = (event:any) => {
     setInputValue(event.target.value);
@@ -19,17 +41,32 @@ export default function Home() {
   };
 
   const sendMessage = async () => {
-    // if (activeAddress === null) {
-    //   alert("Please connect your wallet to proceed");
-    // }
-    if (inputValue === "") {
+    if (!walletConnected) {
+      alert("Please connect your wallet to proceed");
+    }
+    else if (inputValue === "") {
       alert("Please enter a message");
     }
     else {
       try {
-        const response = await axios.post('api/sendmsg', {message});
-        console.log(response);
-        setMessages(prevMessages => [...prevMessages, message]);
+        const signer = createDataItemSigner(window.arweaveWallet);
+        const msg = await AOMessage({
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+          data: message,
+          signer,
+          tags: [
+            { name: 'Action', value: 'Broadcast' }
+          ]
+        });
+        
+        let { Messages, Spawns, Output, Error } = await result({
+          message: msg,
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        });
+        
+        console.log(Messages);
+
+        setMessages(prevMessages => [...prevMessages, Messages[0].Data]);
       } catch (error) {
         console.log(error);
       }
@@ -38,8 +75,21 @@ export default function Home() {
 
   const register = async () => {
     try {
-      const response = await axios.post('api/register');
-      console.log(response);
+      const signer = createDataItemSigner(window.arweaveWallet);
+      const msg = await AOMessage({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        signer,
+        tags: [
+          { name: 'Action', value: 'Register' }
+        ]
+      });
+      
+      let { Messages, Spawns, Output, Error } = await result({
+        message: msg,
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+      });
+
+      console.log(Messages[0].Data)
     } catch (error) {
       console.log(error);
     }
@@ -47,7 +97,6 @@ export default function Home() {
 
   return (
     <div>
-      {/* <ConnectButton showBalance={true} showProfilePicture={true} /> */}
       <div>
         <div className="border-2 w-96 h-96 mb-6 ml-96">
           {displayMessages}
@@ -62,6 +111,8 @@ export default function Home() {
           />
           <button onClick={sendMessage}>Send Message</button>
           <button onClick={register} className="ml-4">Register</button>
+          <button onClick={connectWallet} className="ml-4">Connect</button>
+          <button onClick={disconnectWallet} className="ml-4">Disconnect</button>
         </div>
       </div>
     </div>
