@@ -27,7 +27,7 @@ export default function Home() {
     }
     else {
       try {
-        const response = await axios.post('http://localhost:4000/send', {message});
+        const response = await axios.post('api/sendmsg', {message});
         console.log(response);
         setMessages(prevMessages => [...prevMessages, message]);
       } catch (error) {
@@ -38,7 +38,7 @@ export default function Home() {
 
   const register = async () => {
     try {
-      const response = await axios.post('http://localhost:4000/register');
+      const response = await axios.post('api/register');
       console.log(response);
     } catch (error) {
       console.log(error);
