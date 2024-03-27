@@ -8,8 +8,8 @@ Create Smart Contracts
 
 Features to add:
 
-- [] Add 'Messages' Table to the Chatroom, which will be synchronized over all the Processes
-- [ ] Connect Wallet
+- [x] Add 'Messages' Table to the Chatroom, which will be synchronized over all the Processes
+- [x] Connect Wallet
 - Autonomous Bot Updates (0rbit)
   - [ ] Price Feed Bot
   - [ ] News Feed Bot

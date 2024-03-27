@@ -3,27 +3,85 @@
 import { useEffect, useState } from "react";
 import { createDataItemSigner, message as AOMessage, result } from "@permaweb/aoconnect";
 
+type Message = {
+  data: string;
+  from: string;
+  timestamp: number;
+}
+
 export default function Home() {
   const [message, setMessage] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState<String[]>([]);
-  const displayMessages = messages.map((message, index) => ( <div key={index}>{message}</div> ));
+  const [messages, setMessages] = useState<Message[]>([{
+    "data": "Data",
+    "from": "Self",
+    "timestamp": 0
+  }]);
+  const displayMessages = messages.slice(1).map((message, index) => (
+  <div key={index}>
+    <p>{message.from}</p>
+    <p>{message.data}</p>
+    <p>{message.timestamp}</p>
+  </div>
+  ));
   const [walletConnected, setWalletConnected] = useState(false);
+  fetchLatestMessages();
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get('api/getmsgs');
-  //       setMessages(prevMessages => [...prevMessages, response.data.data]);
-  //       console.log(response);
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const signer = createDataItemSigner(window.arweaveWallet);
+        const msg = await AOMessage({
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+          signer,
+          tags: [
+              { name: 'Action', value: 'Get-Latest-Message' },
+              { name: 'LatestTimeStamp', value: String(messages[messages.length - 1].timestamp) }
+            ]
+          });
+          
+          let { Messages } = await result({
+            message: msg,
+            process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+          });
+          console.log(Messages);
 
-  //   fetchData();
-  //   // const interval = setInterval(fetchData, 10000);
-  // }, []);
+          if (Messages[0].Data === "Up to date") {}
+          else {
+            const tags = Messages[0].Tags;
+            const newMessage = {
+              "data": tags[7].value,
+              "from": tags[6].value,
+              "timestamp": tags[8].value
+            }
+            setMessages(prevMessages => [...prevMessages, newMessage]);
+          }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    setInterval(fetchMessages, 2000);
+  }, []);
+
+  // Fetches 15 Latest Messages
+  async function fetchLatestMessages() {
+    const signer = createDataItemSigner(window.arweaveWallet);
+    const msg = await AOMessage({
+      process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+      signer,
+      tags: [
+        { name: 'Action', value: 'Get-Latest-Messages' },
+      ]
+    });
+    
+    let { Messages } = await result({
+      message: msg,
+      process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+    });
+    const latestMessagesArray = JSON.parse(Messages[0].Data);
+    setMessages(prevMessages => [...prevMessages, ...latestMessagesArray]);
+  }
 
   async function connectWallet() {
     await window.arweaveWallet.connect(["SIGN_TRANSACTION"]);
