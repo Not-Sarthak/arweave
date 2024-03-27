@@ -17,6 +17,7 @@ export default function Home() {
     "from": "Self",
     "timestamp": 0
   }]);
+
   const displayMessages = messages.slice(1).map((message, index) => (
   <div key={index}>
     <p>{message.from}</p>
@@ -24,8 +25,6 @@ export default function Home() {
     <p>{message.timestamp}</p>
   </div>
   ));
-  const [walletConnected, setWalletConnected] = useState(false);
-  fetchLatestMessages();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -44,9 +43,8 @@ export default function Home() {
             message: msg,
             process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
           });
-          console.log(Messages);
 
-          if (Messages[0].Data === "Up to date") {}
+          if (Messages[0].Data === "Up to date") {;}
           else {
             const tags = Messages[0].Tags;
             const newMessage = {
@@ -60,37 +58,19 @@ export default function Home() {
         console.error('Error fetching data:', error);
       }
     };
-
-    setInterval(fetchMessages, 2000);
-  }, []);
-
-  // Fetches 15 Latest Messages
-  async function fetchLatestMessages() {
-    const signer = createDataItemSigner(window.arweaveWallet);
-    const msg = await AOMessage({
-      process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-      signer,
-      tags: [
-        { name: 'Action', value: 'Get-Latest-Messages' },
-      ]
-    });
-    
-    let { Messages } = await result({
-      message: msg,
-      process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-    });
-    const latestMessagesArray = JSON.parse(Messages[0].Data);
-    setMessages(prevMessages => [...prevMessages, ...latestMessagesArray]);
-  }
+    fetchMessages();
+    const intervalId = setInterval(fetchMessages, 5000);
+    return () => clearInterval(intervalId);
+  }, [messages]);
 
   async function connectWallet() {
     await window.arweaveWallet.connect(["SIGN_TRANSACTION"]);
-    setWalletConnected(true);
+    localStorage.setItem("walletConnected", "true");
   }
   
   async function disconnectWallet() {
     await window.arweaveWallet.disconnect();
-    setWalletConnected(false);
+    localStorage.setItem("walletConnected", "false");
   }
 
   const handleInputChange = (event:any) => {
@@ -99,7 +79,7 @@ export default function Home() {
   };
 
   const sendMessage = async () => {
-    if (!walletConnected) {
+    if (localStorage.getItem("walletConnected") === "false") {
       alert("Please connect your wallet to proceed");
     }
     else if (inputValue === "") {
@@ -116,15 +96,6 @@ export default function Home() {
             { name: 'Action', value: 'Broadcast' }
           ]
         });
-        
-        let { Messages, Spawns, Output, Error } = await result({
-          message: msg,
-          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-        });
-        
-        console.log(Messages);
-
-        setMessages(prevMessages => [...prevMessages, Messages[0].Data]);
       } catch (error) {
         console.log(error);
       }
@@ -132,24 +103,32 @@ export default function Home() {
   }
 
   const register = async () => {
-    try {
-      const signer = createDataItemSigner(window.arweaveWallet);
-      const msg = await AOMessage({
-        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-        signer,
-        tags: [
-          { name: 'Action', value: 'Register' }
-        ]
-      });
-      
-      let { Messages, Spawns, Output, Error } = await result({
-        message: msg,
-        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-      });
-
-      console.log(Messages[0].Data)
-    } catch (error) {
-      console.log(error);
+    if (!walletConnected) {
+      alert("Please connect your wallet to proceed");
+    }
+    else if (inputValue === "") {
+      alert("Please enter a message");
+    }
+    else {
+      try {
+        const signer = createDataItemSigner(window.arweaveWallet);
+        const msg = await AOMessage({
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+          signer,
+          tags: [
+            { name: 'Action', value: 'Register' }
+          ]
+        });
+        
+        let { Messages } = await result({
+          message: msg,
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        });
+        
+        console.log(Messages[0].Data)
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 
