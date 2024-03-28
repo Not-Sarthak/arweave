@@ -67,25 +67,9 @@ Handlers.add(
     function(msg)
         if tonumber(msg.Tags.LatestTimeStamp) < Messages[#Messages].timestamp then
             Handlers.utils.reply(Messages[#Messages])(msg)
-            print("sending new msg")
         else
             Handlers.utils.reply("Up to date")(msg)
-            print("up to date")
         end
-    end
-)
-
-Handlers.add(
-    "Get Latest Messages",
-    Handlers.utils.hasMatchingTag("Action", "Get-Latest-Messages"),
-    function(msg)
-        local messagesToSend = {}
-
-        for i = #Messages, #Messages - 14, -1 do
-            table.insert(messagesToSend, Messages[i])
-        end
-
-        Handlers.utils.reply(json.encode(messagesToSend))(msg)
     end
 )
 

@@ -103,7 +103,7 @@ export default function Home() {
   }
 
   const register = async () => {
-    if (!walletConnected) {
+    if (localStorage.getItem("walletConnected") === "false") {
       alert("Please connect your wallet to proceed");
     }
     else if (inputValue === "") {

@@ -3,7 +3,7 @@ Things to do:
 Create Smart Contracts
 
 - [x] Tokengated Chatroom
-- [ ] Price Feed
+- [x] Price Feed
 - [ ] News Feed
 
 Features to add:
@@ -13,7 +13,7 @@ Features to add:
 - Autonomous Bot Updates (0rbit)
   - [ ] Price Feed Bot
   - [ ] News Feed Bot
-- [ ] Public Tokengated Chatroom
+- [x] Public Tokengated Chatroom
 - [ ] Image Sharing (use Liteseed.xyz)
 
 Enhancements:
