@@ -58,6 +58,7 @@ export default function Home() {
         console.error('Error fetching data:', error);
       }
     };
+  
     fetchMessages();
     const intervalId = setInterval(fetchMessages, 5000);
     return () => clearInterval(intervalId);
@@ -132,6 +133,50 @@ export default function Home() {
     }
   }
 
+  const getPriceFeed = async () => {
+    try {
+      const signer = createDataItemSigner(window.arweaveWallet);
+      const msg = await AOMessage({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        signer,
+        tags: [
+            { name: 'Action', value: 'Get-Price' },
+          ]
+        });
+        
+        let { Messages } = await result({
+          message: msg,
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        });
+
+        setMessages(prevMessages => [...prevMessages, Messages[0].Data]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+  
+  const getNewsFeed = async () => {
+    try {
+      const signer = createDataItemSigner(window.arweaveWallet);
+      const msg = await AOMessage({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        signer,
+        tags: [
+            { name: 'Action', value: 'Get-News' },
+          ]
+        });
+
+        let { Messages } = await result({
+          message: msg,
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        });
+
+        setMessages(prevMessages => [...prevMessages, Messages[0].Data]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+
   return (
     <div>
       <div>
@@ -150,6 +195,8 @@ export default function Home() {
           <button onClick={register} className="ml-4">Register</button>
           <button onClick={connectWallet} className="ml-4">Connect</button>
           <button onClick={disconnectWallet} className="ml-4">Disconnect</button>
+          <button onClick={getPriceFeed} className="ml-4">Get Price</button>
+          <button onClick={getNewsFeed} className="ml-4">Get News</button>
         </div>
       </div>
     </div>

@@ -4,15 +4,15 @@ Create Smart Contracts
 
 - [x] Tokengated Chatroom
 - [x] Price Feed
-- [ ] News Feed
+- [x] News Feed
 
 Features to add:
 
 - [x] Add 'Messages' Table to the Chatroom, which will be synchronized over all the Processes
 - [x] Connect Wallet
 - Autonomous Bot Updates (0rbit)
-  - [ ] Price Feed Bot
-  - [ ] News Feed Bot
+  - [x] Price Feed Bot
+  - [x] News Feed Bot
 - [x] Public Tokengated Chatroom
 - [ ] Image Sharing (use Liteseed.xyz)
 
