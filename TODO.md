@@ -18,6 +18,4 @@ Features to add:
 
 Enhancements:
 
-- [ ] Add Unregister
-- [ ] Add Names in Chatroom
-- [ ] Huddle Integration
+- [x] Huddle Integration

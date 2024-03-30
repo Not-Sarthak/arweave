@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createDataItemSigner, message as AOMessage, result } from "@permaweb/aoconnect";
 import axios from "axios";
 import Image from "next/image";
+import { redirect, useRouter } from "next/navigation";
 
 type Message = {
   msgtype: "Message" | "Image",
@@ -14,6 +15,7 @@ type Message = {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -79,7 +81,7 @@ export default function Home() {
     };
   
     fetchMessages();
-    const intervalId = setInterval(fetchMessages, 10000);
+    const intervalId = setInterval(fetchMessages, 1000);
     return () => clearInterval(intervalId);
   }, [messages]);
 
@@ -236,6 +238,55 @@ export default function Home() {
     }
   }
 
+  async function createRoom() {
+    try {
+      const res = await axios.post(
+        'https://api.huddle01.com/api/v1/create-iframe-room',
+        {
+          title: 'Huddle01-Test',
+          roomLocked: true
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': "FCTEM_VeMwTN2kSootpVN_SIR94SQTwR",
+          },
+        }
+      );
+  
+      const response = await axios.post(
+        'https://api.huddle01.com/api/v1/join-room-token',
+        {
+            roomId: res.data.data.roomId,
+            userType: "host"
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            // 'x-api-key': process.env.HUDDLE_API_KEY,
+            'x-api-key': "FCTEM_VeMwTN2kSootpVN_SIR94SQTwR",
+          },
+        }
+      );
+
+      const signer = createDataItemSigner(window.arweaveWallet);
+      const msg = await AOMessage({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        data: message,
+        signer,
+        tags: [
+          { name: 'Action', value: 'Broadcast' },
+          { name: 'msgtype', value: 'Message' },
+          { name: 'url', value: 'no-url' }
+        ]
+      });
+
+      router.push(response.data.redirectUrl);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div>
       <div>
@@ -258,6 +309,7 @@ export default function Home() {
           <button onClick={disconnectWallet} className="ml-4">Disconnect</button>
           <button onClick={getPriceFeed} className="ml-4">Get Price</button>
           <button onClick={getNewsFeed} className="ml-4">Get News</button>
+          <button onClick={createRoom}>Create Room</button>
         </div>
       </div>
     </div>
