@@ -96,6 +96,24 @@ export default function Home() {
   async function connectWallet() {
     await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"]);
     localStorage.setItem("walletConnected", "true");
+
+    try {
+      const signer = createDataItemSigner(window.arweaveWallet);
+      const msg = await AOMessage({
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+        signer,
+        tags: [
+          { name: 'Action', value: 'Register' }
+        ]
+      });
+      
+      let { Messages } = await result({
+        message: msg,
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
   
   async function disconnectWallet() {
@@ -163,34 +181,6 @@ export default function Home() {
             { name: 'msgtype', value: 'Message' },
             { name: 'url', value: 'no-url' }
           ]
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  }
-
-  const register = async () => {
-    if (localStorage.getItem("walletConnected") === "false") {
-      alert("Please connect your wallet to proceed");
-    }
-    else if (inputValue === "") {
-      alert("Please enter a message");
-    }
-    else {
-      try {
-        const signer = createDataItemSigner(window.arweaveWallet);
-        const msg = await AOMessage({
-          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-          signer,
-          tags: [
-            { name: 'Action', value: 'Register' }
-          ]
-        });
-        
-        let { Messages } = await result({
-          message: msg,
-          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
         });
       } catch (error) {
         console.log(error);
@@ -325,7 +315,6 @@ export default function Home() {
           <input type="file" onChange={handleFileChange} />
           <button onClick={sendImage}>Upload File</button>
           <button onClick={sendMessage}>Send Message</button>
-          <button onClick={register} className="ml-4">Register</button>
           <button onClick={connectWallet} className="ml-4">Connect</button>
           <button onClick={disconnectWallet} className="ml-4">Disconnect</button>
           <button onClick={getPriceFeed} className="ml-4">Get Price</button>
