@@ -14,8 +14,10 @@ Features to add:
   - [x] Price Feed Bot
   - [x] News Feed Bot
 - [x] Public Tokengated Chatroom
-- [ ] Image Sharing (use Liteseed.xyz)
+- [x] Image Sharing (use Liteseed.xyz)
 
 Enhancements:
 
-- [ ] Add more features in Chatroom
+- [ ] Add Unregister
+- [ ] Add Names in Chatroom
+- [ ] Huddle Integration

@@ -46,6 +46,8 @@ Handlers.add(
         end
 
         table.insert(Messages, {
+            msgtype = msg.Tags.msgtype,
+            url = msg.Tags.url,
             from = msg.From,
             timestamp = msg.Timestamp,
             data = msg.Data,
@@ -80,6 +82,8 @@ Handlers.add(
         if msg.From == ao.id then
             Messages = {}
             Handlers.utils.reply("Cleared")(msg)
+        else
+            Handlers.utils.reply("Only process owners can clear messages")(msg)
         end
     end
 )

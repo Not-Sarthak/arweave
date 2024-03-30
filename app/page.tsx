@@ -59,8 +59,6 @@ export default function Home() {
             process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
           });
 
-          console.log("Messages: ", Messages)
-
           if (Messages.length === 0) { return; }
 
           if (Messages[0].Data === "Up to date") { return; }
