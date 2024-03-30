@@ -1,5 +1,3 @@
--- Process ID: MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE
-
 local json = require("json")
 
 -- processId of the 0rbit process.
@@ -15,17 +13,17 @@ BASE_URL = "https://api.coingecko.com/api/v3/simple/price"
 TOKEN_PRICES = TOKEN_PRICES or {
     BTC = {
         coingecko_id = "bitcoin",
-        price = 60000,
+        price = 500,
         last_update_timestamp = 0
     },
     ETH = {
         coingecko_id = "ethereum",
-        price = 4000,
+        price = 0,
         last_update_timestamp = 0
     },
     SOL = {
         coingecko_id = "solana",
-        price = 200,
+        price = 0,
         last_update_timestamp = 0
     }
 }
@@ -59,7 +57,6 @@ Handlers.add(
                 ao.send({
                     Target = msg.From,
                     Tags = {
-                        Action = 'Add Token Success',
                         ['Message-Id'] = msg.Id,
                         Token = token
                     }
@@ -68,7 +65,6 @@ Handlers.add(
                 ao.send({
                     Target = msg.From,
                     Tags = {
-                        Action = 'Add Token Error',
                         ['Message-Id'] = msg.Id,
                         Error = 'Token already exists'
                     }
@@ -156,27 +152,27 @@ Handlers.add(
     "GetPrice",
     Handlers.utils.hasMatchingTag("Action", "Get-Price"),
     function(msg)
+        print(msg.From)
         local token = msg.Tags.Token
         local price = TOKEN_PRICES[token].price
-
         if price == 0 then
             ao.send({
                 Target = msg.From,
                 Tags = {
-                    Action = 'Get-Price Error',
                     ['Message-Id'] = msg.Id,
                     Error = 'Price not available! Please contact @0rbitco on X'
                 }
             })
             return
         else
-            Send({
-                Target = msg.From,
-                Tags = {
-                    ['Message-Id'] = msg.Id,
-                    Price = tostring(price)
-                }
-            })
+            Handlers.utils.reply(tostring(price))(msg)
+            -- ao.send({
+            --     Target = msg.From,
+            --     Tags = {
+            --         ['Message-Id'] = msg.Id,
+            --         Price = tostring(price)
+            --     }
+            -- })
         end
         table.insert(
             LOGS,
@@ -191,6 +187,7 @@ Handlers.add(
         )
     end
 )
+
 
 --[[
     CRON FUNCTIONS TO UPDATE THE TOKEN PRICES

@@ -7,7 +7,7 @@ import Image from "next/image";
 import { redirect, useRouter } from "next/navigation";
 
 type Message = {
-  msgtype: "Message" | "Image",
+  msgtype: "Message" | "Image" | "Feed",
   url: string,
   data: string;
   from: string;
@@ -30,17 +30,21 @@ export default function Home() {
   const displayMessages = messages.slice(1).map((message, index) => (
     <div key={index}>
       {message.msgtype === "Message" ? (
-        <div>
-          <p>{message.from}</p>
-          <p>{message.data}</p>
-          <p>{message.timestamp}</p>
-        </div>
-      ) : (
-        <div>
-          <Image src={`https://api.liteseed.xyz/data/${message.url}`} alt="image" width={100} height={100} />
-        </div>
-      )}
-    </div>
+      <div>
+        <p>{message.from}</p>
+        <p>{message.data}</p>
+        <p>{message.timestamp}</p>
+      </div>
+    ) : message.msgtype === "Image" ? (
+      <div>
+        <Image src={`https://api.liteseed.xyz/data/${message.url}`} alt="image" width={100} height={100} />
+      </div>
+    ) : (
+      <div>
+        <p>{message.data}</p>
+      </div>
+    )}
+  </div>
   ));
 
   useEffect(() => {
@@ -202,15 +206,25 @@ export default function Home() {
         signer,
         tags: [
             { name: 'Action', value: 'Get-Price' },
+            { name: 'Token', value: 'BTC' }
           ]
         });
         
-        let { Messages } = await result({
-          message: msg,
-          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
-        });
+      let { Messages } = await result({
+        message: msg,
+        process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+      });
 
-        setMessages(prevMessages => [...prevMessages, Messages[0].Data]);
+      // console.log(messages[-1])
+      const newMessage: Message = {
+        "from": "from",
+        "data": Messages[0].Data,
+        "timestamp": messages[messages.length - 1].timestamp + 1,
+        "msgtype": "Feed",
+        "url": "no-url",
+      }
+
+      setMessages(prevMessages => [...prevMessages, newMessage]);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -232,7 +246,14 @@ export default function Home() {
           process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
         });
 
-        setMessages(prevMessages => [...prevMessages, Messages[0].Data]);
+        const newMessage: Message = {
+          "from": "from",
+          "data": Messages[0].Data,
+          "timestamp": messages[messages.length - 1].timestamp + 1,
+          "msgtype": "Feed",
+          "url": "no-url",
+        }
+        setMessages(prevMessages => [...prevMessages, newMessage]);
     } catch (error) {
       console.error('Error fetching data:', error);
     }

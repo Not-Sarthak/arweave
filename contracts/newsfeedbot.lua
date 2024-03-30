@@ -10,19 +10,16 @@ Handlers.add(
     "GetNews",
     Handlers.utils.hasMatchingTag("Action", "Get-News"),
     function(msg)
-        table.insert(REQUESTS, msg.From)
+        -- table.insert(REQUESTS, msg.From)
+        -- Sending Dummy Data for now as there are some issues with 0rbit
         -- ao.send({
         --     Target = _0RBIT,
         --     Action = "Get-Real-Data",
         --     Url = BASE_URL
         -- })
-
-        -- Sending Dummy Data for now as there are some issues with 0rbit
-        ao.send({
-            Target = msg.From,
-            Data = "Breaking NEWS!!!"
-        })
-        table.remove(REQUESTS, 0)
+        print(msg.From)
+        Handlers.utils.reply("Breaking NEWS!!!")(msg)
+        -- table.remove(REQUESTS, 0)
     end
 )
 
