@@ -2,28 +2,43 @@
 
 import { useEffect, useState } from "react";
 import { createDataItemSigner, message as AOMessage, result } from "@permaweb/aoconnect";
+import axios from "axios";
+import Image from "next/image";
 
 type Message = {
+  msgtype: "Message" | "Image",
+  url: string,
   data: string;
   from: string;
   timestamp: number;
 }
 
 export default function Home() {
+  const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([{
+    "msgtype": "Message",
+    "url": "url",
     "data": "Data",
     "from": "Self",
     "timestamp": 0
   }]);
 
   const displayMessages = messages.slice(1).map((message, index) => (
-  <div key={index}>
-    <p>{message.from}</p>
-    <p>{message.data}</p>
-    <p>{message.timestamp}</p>
-  </div>
+    <div key={index}>
+      {message.msgtype === "Message" ? (
+        <div>
+          <p>{message.from}</p>
+          <p>{message.data}</p>
+          <p>{message.timestamp}</p>
+        </div>
+      ) : (
+        <div>
+          <Image src={`https://api.liteseed.xyz/data/${message.url}`} alt="image" width={100} height={100} />
+        </div>
+      )}
+    </div>
   ));
 
   useEffect(() => {
@@ -44,13 +59,19 @@ export default function Home() {
             process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
           });
 
-          if (Messages[0].Data === "Up to date") {;}
+          console.log("Messages: ", Messages)
+
+          if (Messages.length === 0) { return; }
+
+          if (Messages[0].Data === "Up to date") { return; }
           else {
             const tags = Messages[0].Tags;
             const newMessage = {
-              "data": tags[7].value,
-              "from": tags[6].value,
-              "timestamp": tags[8].value
+              "from": tags[9].value,
+              "data": tags[6].value,
+              "timestamp": tags[10].value,
+              "msgtype": tags[7].value,
+              "url": tags[8].value
             }
             setMessages(prevMessages => [...prevMessages, newMessage]);
           }
@@ -60,12 +81,16 @@ export default function Home() {
     };
   
     fetchMessages();
-    const intervalId = setInterval(fetchMessages, 5000);
+    const intervalId = setInterval(fetchMessages, 10000);
     return () => clearInterval(intervalId);
   }, [messages]);
 
+  const handleFileChange = (e: any) => {
+    setFile(e.target.files[0]);
+  };
+
   async function connectWallet() {
-    await window.arweaveWallet.connect(["SIGN_TRANSACTION"]);
+    await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"]);
     localStorage.setItem("walletConnected", "true");
   }
   
@@ -78,6 +103,42 @@ export default function Home() {
     setInputValue(event.target.value);
     setMessage(event.target.value);
   };
+
+  const sendImage = async () => {
+    if (localStorage.getItem("walletConnected") === "false") {
+      alert("Please connect your wallet to proceed");
+    }
+    else {
+      try {
+        const signer = createDataItemSigner(window.arweaveWallet);
+        const formData = new FormData();
+
+        if (file) {
+          formData.append('file', file);
+        } else {
+          alert("No file selected");
+          return;
+        }
+        
+        const { data } = await axios.post('https://api.liteseed.xyz/data', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        const msg = await AOMessage({
+          process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
+          data: message,
+          signer,
+          tags: [
+            { name: 'Action', value: 'Broadcast' },
+            { name: 'msgtype', value: 'Image' },
+            { name: 'url', value: data.id }
+          ]
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
 
   const sendMessage = async () => {
     if (localStorage.getItem("walletConnected") === "false") {
@@ -94,7 +155,9 @@ export default function Home() {
           data: message,
           signer,
           tags: [
-            { name: 'Action', value: 'Broadcast' }
+            { name: 'Action', value: 'Broadcast' },
+            { name: 'msgtype', value: 'Message' },
+            { name: 'url', value: 'no-url' }
           ]
         });
       } catch (error) {
@@ -125,8 +188,6 @@ export default function Home() {
           message: msg,
           process: "MD76snAyJJICvDt2rhhA68zIjPSIYJDKuyQ19yFiTGE",
         });
-        
-        console.log(Messages[0].Data)
       } catch (error) {
         console.log(error);
       }
@@ -191,6 +252,8 @@ export default function Home() {
             value={inputValue}
             onChange={handleInputChange}
           />
+          <input type="file" onChange={handleFileChange} />
+          <button onClick={sendImage}>Upload File</button>
           <button onClick={sendMessage}>Send Message</button>
           <button onClick={register} className="ml-4">Register</button>
           <button onClick={connectWallet} className="ml-4">Connect</button>
